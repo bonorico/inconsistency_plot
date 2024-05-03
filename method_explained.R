@@ -60,7 +60,7 @@ net <- netmeta(TE, seTE, treat1, treat2, studlab,
 
 table <- netsplit(net)
 
-
+input_model_type <- "fixed"
 
 # Extract direct and indirect estimates
 direct <- table[[paste("direct", input_model_type, sep = '.')]] %>%
