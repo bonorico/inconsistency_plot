@@ -6,7 +6,9 @@
 
 consistency_check <- function(table,
                               model_type = "fixed",
-                              vertical = TRUE)
+                              vertical = TRUE,
+                              alphalev = 0.05,
+                              labelsize = 5)
 {
 
   # Extract direct and indirect estimates
@@ -40,7 +42,7 @@ consistency_check <- function(table,
     diff.ci,
     by = 'comparison') %>%
     mutate(
-      signif = if_else(diff.pval < 0.05,
+      signif = if_else(diff.pval < alphalev,
                        "Y",
                        "N")) %>%
   {
@@ -109,37 +111,41 @@ consistency_check <- function(table,
     geom_text_repel(data = lines_df %>%
                       filter(Bound == "new.ci.low"),
                     mapping = mapslab,
-                    size = 3) +
+                    size = labelsize) +
     # Significance colors
     scale_color_manual(values = c("gray50", "red")) +
     coord_cartesian(xlim = c(-axis.lim, axis.lim),
                     ylim = c(-axis.lim, axis.lim)) +
 
     # Define theme
-    # theme(
-    #   axis.title.x        = element_text(margin = margin(t = 15)),
-    #   axis.title.y        = element_text(margin = margin(r = 10)),
-    #   plot.margin         = margin(20, 40, 20, 20),
-    #   panel.background    = element_rect(fill = alpha("white", 1)),
-    #   axis.ticks          = element_line(color = axis.color),
-    #   axis.line           = element_line(color = axis.color),
-    #   panel.grid          = element_line(color = alpha("white", 0)),
-    #   axis.text           = element_text(color = axis.color),
-    #   axis.title          = element_text(size  = 9,
-    #                                      color = axis.color),
-    #   legend.position     = 'none',
-    #   plot.title.position = 'plot',
-    #   plot.title          = element_text(size = 12)) +
     theme(
-      axis.title.x      = element_text(margin = margin(t = 12.5)),
-      axis.title.y     = element_text(margin = margin(r = 12.5)),
-      plot.margin      = margin(20, 20, 20, 20),
+      axis.title.x        = element_text(margin = margin(t = 15)),
+      axis.title.y        = element_text(margin = margin(r = 10)),
+      plot.margin         = margin(20, 40, 20, 20),
+ #      panel.background    = element_rect(fill = alpha("white", 1)),
+      axis.ticks          = element_line(color = axis.color),
+      axis.line           = element_line(color = axis.color),
+ #     panel.grid          = element_line(color = alpha("white", 0)),
+      axis.text           = element_text(color = axis.color),
+      axis.title          = element_text(size  = 9,
+                                         color = axis.color),
       panel.background = element_rect(fill = "gray99"),
       panel.grid.major = element_line(color = "gray95"),
       panel.grid.minor = element_blank(),
-      axis.ticks       = element_line(color = "gray95"),
-      legend.position     = 'none'
-    ) +
+      legend.position     = 'none',
+      #plot.title.position = 'plot',
+      #plot.title          = element_text(size = 12)
+      ) +
+    # theme(
+    #   axis.title.x      = element_text(margin = margin(t = 12.5)),
+    #   axis.title.y     = element_text(margin = margin(r = 12.5)),
+    #   plot.margin      = margin(20, 20, 20, 20),
+    #   panel.background = element_rect(fill = "gray99"),
+    #   panel.grid.major = element_line(color = "gray95"),
+    #   panel.grid.minor = element_blank(),
+    #   axis.ticks       = element_line(color = "gray95"),
+    #   legend.position     = 'none'
+    # ) +
     # Add plot labels
     labs(title = "Direct Estimates against Indirect Estimates with 95% Confidence Intervals of their Differences",
          subtitle = paste(str_to_title(model_type), "Effects"),
