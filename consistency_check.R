@@ -2,6 +2,8 @@
 #' @param table - netsplit object
 #' @param model_type - character - fixed or random
 #' @param vertical - Boolean - If TRUE vertical CIs are plotted. Otherwise horizontal. Interpretation is the same.
+#' @param alphalev - numeric - level of error type I for colour-displaying significant p-values
+#' @param labelsize - numeric - size of comparison labels
 #'
 
 consistency_check <- function(table,
@@ -147,10 +149,16 @@ consistency_check <- function(table,
     #   legend.position     = 'none'
     # ) +
     # Add plot labels
-    labs(title = "Direct Estimates against Indirect Estimates with 95% Confidence Intervals of their Differences",
-         subtitle = paste(str_to_title(model_type), "Effects"),
+    labs(title = "Direct Estimates against Indirect Estimates and 95% Confidence Intervals of their Differences",
+         subtitle = paste(str_to_title(model_type), "Effects Model"),
          x     = "Direct Effect Estimate",
-         y     = "Indirect Effect Estimate")
+         y     = "Indirect Effect Estimate",
+         caption = paste0(
+           "Significant results (alpha < ",
+           alphalev,
+           ") are displayed in red"
+         )
+         )
 
 
 
