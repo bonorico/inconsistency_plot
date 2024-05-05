@@ -135,21 +135,9 @@ consistency_check <- function(table,
       panel.background = element_rect(fill = "gray99"),
       panel.grid.major = element_line(color = "gray95"),
       panel.grid.minor = element_blank(),
-      legend.position     = 'none',
-      #plot.title.position = 'plot',
-      #plot.title          = element_text(size = 12)
-      ) +
-    # theme(
-    #   axis.title.x      = element_text(margin = margin(t = 12.5)),
-    #   axis.title.y     = element_text(margin = margin(r = 12.5)),
-    #   plot.margin      = margin(20, 20, 20, 20),
-    #   panel.background = element_rect(fill = "gray99"),
-    #   panel.grid.major = element_line(color = "gray95"),
-    #   panel.grid.minor = element_blank(),
-    #   axis.ticks       = element_line(color = "gray95"),
-    #   legend.position     = 'none'
-    # ) +
-    # Add plot labels
+      legend.position     = 'none'
+       ) +
+      # Add plot labels
     labs(title = mytitle,
          subtitle = paste(str_to_title(model_type), "Effects Model"),
          x     = "Direct Effect Estimate",
