@@ -10,7 +10,8 @@ consistency_check <- function(table,
                               model_type = "fixed",
                               vertical = TRUE,
                               alphalev = 0.05,
-                              labelsize = 5)
+                              labelsize = 5,
+                              mytitle = "Direct Estimates against Indirect Estimates and 95% Confidence Intervals of their Differences")
 {
 
   # Extract direct and indirect estimates
@@ -149,7 +150,7 @@ consistency_check <- function(table,
     #   legend.position     = 'none'
     # ) +
     # Add plot labels
-    labs(title = "Direct Estimates against Indirect Estimates and 95% Confidence Intervals of their Differences",
+    labs(title = mytitle,
          subtitle = paste(str_to_title(model_type), "Effects Model"),
          x     = "Direct Effect Estimate",
          y     = "Indirect Effect Estimate",
