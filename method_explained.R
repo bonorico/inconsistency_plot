@@ -76,4 +76,8 @@ figure <- gridExtra::arrangeGrob(plot1, plot2, nrow=2)
 
 ggsave("Figure 1.ps", figure,
        device=cairo_ps, dpi=800,
-       width = 15.0, height = 15.0, units="in")
+       width = 8.0, height = 16.0, units="in")
+
+ggsave("Figure 1.png", figure,
+       device = "png", dpi=800,
+       width = 8.0, height = 16.0, units="in")

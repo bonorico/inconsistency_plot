@@ -101,7 +101,7 @@ consistency_check <- function(table,
   }
 
   ggplot() +
-    geom_abline(slope = 1, intercept = 0) +
+    geom_abline(slope = 1, intercept = 0, linetype = 'dashed') +
     geom_hline(yintercept = 0) +
     geom_vline(xintercept = 0) +
 
