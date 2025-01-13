@@ -28,7 +28,21 @@ plot1 <- ggplot(
                    yend = c((d+i)/2, i, i) ),
                color = c('black', 'red', 'red'),
                linetype=c("dotted", "solid", "solid")) +
-
+  
+# add filling of half triangle
+   annotate(
+     geom = "polygon", 
+     x = c(d, d, (d+i)/2),
+     y = c(i, d, (d+i)/2),
+     fill = "blue",
+     alpha = 0.1
+   ) + 
+  geom_text(
+    x = (d+i)/2,
+    y = (d+i)/2,
+    label = "B",
+    nudge_x = 0.3 
+  ) +
   geom_point() +
   geom_text_repel(
     family = "Times New Roman",
@@ -69,6 +83,11 @@ netmeta::netrank(net)
 netmeta::netgraph(net)
 
 netmeta::netheat(net)
+
+netmeta:::forest.netsplit(
+  netmeta::netsplit(net)
+  
+)
 
 plot2 <- consistency_check(netsplit(net), mytitle = "B")
 
