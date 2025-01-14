@@ -84,12 +84,28 @@ netmeta::netgraph(net)
 
 netmeta::netheat(net)
 
+net$TE.direct.common
+net$TE.indirect.common
+
+res <- netmeta::netsplit(net)
+
+res$method
+
+prop <- res$compare.common |> 
+  left_join(
+    data.frame(
+      comparison = res$comparison,
+      prop.direct = res$prop.common
+    ),
+    by = "comparison"
+  )
+
+
 netmeta:::forest.netsplit(
-  netmeta::netsplit(net)
-  
+  res
 )
 
-plot2 <- consistency_check(netsplit(net), mytitle = "B")
+plot2 <- consistency_check(res, mytitle = "B")
 
 figure <- gridExtra::arrangeGrob(plot1, plot2, nrow=2)
 
