@@ -87,7 +87,10 @@ netmeta::netheat(net)
 net$TE.direct.common
 net$TE.indirect.common
 
+# back-calculation
 res <- netmeta::netsplit(net)
+# node-splitting
+res2 <- netmeta::netsplit(net, method = "SIDDE")
 
 res$method
 
