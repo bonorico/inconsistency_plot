@@ -4,6 +4,7 @@
 #' @param vertical - Boolean - If TRUE vertical CIs are plotted. Otherwise horizontal. Interpretation is the same.
 #' @param alphalev - numeric - level of error type I for colour-displaying significant p-values
 #' @param labelsize - numeric - size of comparison labels
+#' @param show_prop - Boolean - If TRUE, shows point size according to contributing percentage of indirect evidence in the mix
 #'
 
 consistency_check <- function(table,
@@ -11,7 +12,8 @@ consistency_check <- function(table,
                               vertical = TRUE,
                               alphalev = 0.05,
                               labelsize = 5,
-                              mytitle = "Direct Estimates against Indirect Estimates and 95% Confidence Intervals of their Differences")
+                              mytitle = "Direct Estimates against Indirect Estimates and 95% Confidence Intervals of their Differences",
+                              show_prop = FALSE)
 {
 
   # Extract direct and indirect estimates
@@ -27,9 +29,16 @@ consistency_check <- function(table,
   # Merge estimates and keep only comparisons for which we
   # have both direct and indirect.
   trt.estimates <- inner_join(direct, indirect, by = "comparison") %>%
-
-    filter(is.na(direct.estimate)   == F,
-           is.na(indirect.estimate) == F)
+    # add proportion of indirect evidence
+    left_join(
+      data.frame(
+        comparison = table$comparison,
+        prop.indirect = (1-table[[paste("prop", model_type, sep = '.')]])*100
+      ),
+      by = "comparison"
+    ) |> 
+    filter(is.na(direct.estimate)   == FALSE,
+           is.na(indirect.estimate) == FALSE)
 
 
   # Extract the confidence intervals for the difference (and p-value)
@@ -100,6 +109,15 @@ consistency_check <- function(table,
                 color = signif)
   }
 
+  if (show_prop)
+    mapspoint <- aes(x = direct.estimate,
+                     y = indirect.estimate,
+                     color = signif,
+                     size = prop.indirect)
+  else
+    mapspoint <- aes(x = direct.estimate,
+                     y = indirect.estimate,
+                     color = signif)
   ggplot() +
     geom_abline(slope = 1, intercept = 0, linetype = 'dashed') +
     geom_hline(yintercept = 0) +
@@ -108,9 +126,8 @@ consistency_check <- function(table,
     geom_line(data = lines_df,
               mapping = maps) +
     geom_point(data = graph_df,
-               aes(x = direct.estimate,
-                   y = indirect.estimate,
-                   color = signif)) +
+               mapping = mapspoint   
+               ) +
     geom_text_repel(data = lines_df %>%
                       filter(Bound == "new.ci.low"),
                     mapping = mapslab,
@@ -135,8 +152,10 @@ consistency_check <- function(table,
       panel.background = element_rect(fill = "gray99"),
       panel.grid.major = element_line(color = "gray95"),
       panel.grid.minor = element_blank(),
-      legend.position     = 'none'
+      legend.position     = "bottom"
        ) +
+    guides(colour = "none",
+           size=guide_legend(title="Indirect evidence (%)")) +
       # Add plot labels
     labs(title = mytitle,
          subtitle = paste(str_to_title(model_type), "Effects Model"),
@@ -146,7 +165,8 @@ consistency_check <- function(table,
            "Significant results (alpha < ",
            alphalev,
            ") are displayed in red"
-         )
+         ),
+         tag = "B"
          )
 
 
