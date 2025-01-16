@@ -59,7 +59,7 @@ plot1 <- ggplot(
            y=i+(d-i)*sin(seq(0,2*pi,length.out=100))) +
 
   labs(
-    title = "A",
+    tag = "A",
     x = "direct",
     y = "indirect") +
   theme(panel.background = element_rect(fill = "white") ) +
@@ -90,7 +90,7 @@ net$TE.indirect.common
 # back-calculation
 res <- netmeta::netsplit(net)
 # node-splitting
-res2 <- netmeta::netsplit(net, method = "SIDDE")
+# res2 <- netmeta::netsplit(net, method = "SIDDE")
 
 res$method
 
@@ -108,7 +108,7 @@ netmeta:::forest.netsplit(
   res
 )
 
-plot2 <- consistency_check(res, mytitle = "B")
+plot2 <- consistency_check(res, mytitle = " ")
 
 figure <- gridExtra::arrangeGrob(plot1, plot2, nrow=2)
 
