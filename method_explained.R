@@ -119,3 +119,14 @@ ggsave("Figure 1.ps", figure,
 ggsave("Figure 1.png", figure,
        device = "png", dpi=800,
        width = 8.0, height = 16.0, units="in")
+
+
+
+
+# Example Cig Data Cipriani 2018  ---------------------------------------------------------
+
+cipriani <- readxl::read_xlsx(
+  "./Cipriani et al_GRISELDA_Lancet 2018_Open data.xlsx",
+  na = c("*"),
+  skip = 2
+)
