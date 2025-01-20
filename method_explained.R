@@ -108,7 +108,7 @@ netmeta:::forest.netsplit(
   res
 )
 
-plot2 <- consistency_check(res, mytitle = " ")
+plot2 <- consistency_check(res, mytitle = " ", show_prop = TRUE)
 
 figure <- gridExtra::arrangeGrob(plot1, plot2, nrow=2)
 
@@ -125,8 +125,61 @@ ggsave("Figure 1.png", figure,
 
 # Example Cig Data Cipriani 2018  ---------------------------------------------------------
 
-cipriani <- readxl::read_xlsx(
+cipriani_raw <- readxl::read_xlsx(
   "./Cipriani et al_GRISELDA_Lancet 2018_Open data.xlsx",
   na = c("*"),
   skip = 2
 )
+
+
+cipriani <- netmeta::pairwise(
+  treat = Drug,
+  event = Responders,
+  n = No_randomised,
+  studlab = StudyID,
+  data = cipriani_raw
+)
+
+cip_res <- netmeta::netmeta(cipriani, sm = "OR", common = TRUE, prediction = FALSE, random = FALSE)
+
+netmeta::netgraph(
+  cip_res
+)
+
+cip_split <- netmeta::netsplit(
+  cip_res
+)
+
+png("cipriani_heat2.png", width = 500, height = 500)
+netmeta::netheat(cip_res)
+dev.off()
+
+png("cipriani_forest.png", width = 600, height = 3000)
+netmeta:::forest.netsplit(
+  cip_split
+)
+dev.off()
+
+
+plot3 <- consistency_check(cip_split, 
+                           mytitle = " ",
+                           show_labels_only_signif = TRUE,
+                           ylims = c(-4, 4),
+                           plottag = "A")
+
+plot4 <- consistency_check(cip_split, 
+                           mytitle = " ",
+                           show_only_signif = TRUE,
+                           show_prop = TRUE,
+                           plottag = "B")
+
+
+ggsave("Figure 2.png", 
+       figure <- gridExtra::arrangeGrob(
+         plot3, 
+         plot4, 
+         nrow=2),
+       device = "png", dpi=800,
+       width = 12.0, height = 16.0, units="in")
+
+
