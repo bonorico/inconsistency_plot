@@ -78,6 +78,8 @@ net <- netmeta(TE, seTE, treat1, treat2, studlab,
                data = Senn2013, sm = "MD",
                random = TRUE)
 
+Q <- netmeta::decomp.design(net)
+
 netmeta:::forest.netmeta(net)
 netmeta::netrank(net)
 netmeta::netgraph(net)
