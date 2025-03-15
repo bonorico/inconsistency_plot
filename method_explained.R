@@ -74,17 +74,24 @@ coord_cartesian(xlim = c(0, 2),
 
 
 data("Senn2013")
+
+### basic description of Senn data
+
+
 net <- netmeta(TE, seTE, treat1, treat2, studlab,
                data = Senn2013, sm = "MD",
                random = TRUE)
 
 Q <- netmeta::decomp.design(net)
 
-netmeta:::forest.netmeta(net)
-netmeta::netrank(net)
-netmeta::netgraph(net)
 
-netmeta::netheat(net)
+netmeta::netrank(net)
+netmeta:::forest.netmeta(net)
+
+png("senn_net.png", width = 300, height = 300)
+netmeta::netgraph(net)
+dev.off()
+
 
 net$TE.direct.common
 net$TE.indirect.common
@@ -106,9 +113,16 @@ prop <- res$compare.common |>
   )
 
 
+png("senn_forest.png", width = 600, height = 1000)
 netmeta:::forest.netsplit(
   res
 )
+dev.off()
+
+
+png("senn_netheat.png", width = 600, height = 600)
+netmeta::netheat(net)
+dev.off()
 
 plot2 <- consistency_check(res, mytitle = " ", show_prop = TRUE)
 
