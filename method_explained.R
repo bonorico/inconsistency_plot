@@ -28,20 +28,20 @@ plot1 <- ggplot(
                    yend = c((d+i)/2, i, i) ),
                color = c('black', 'red', 'red'),
                linetype=c("dotted", "solid", "solid")) +
-  
+
 # add filling of half triangle
    annotate(
-     geom = "polygon", 
+     geom = "polygon",
      x = c(d, d, (d+i)/2),
      y = c(i, d, (d+i)/2),
      fill = "blue",
      alpha = 0.1
-   ) + 
+   ) +
   geom_text(
     x = (d+i)/2,
     y = (d+i)/2,
     label = "B",
-    nudge_x = 0.3 
+    nudge_x = 0.3
   ) +
   geom_point() +
   geom_text_repel(
@@ -96,7 +96,7 @@ res <- netmeta::netsplit(net)
 
 res$method
 
-prop <- res$compare.common |> 
+prop <- res$compare.common |>
   left_join(
     data.frame(
       comparison = res$comparison,
@@ -144,9 +144,12 @@ cipriani <- netmeta::pairwise(
 
 cip_res <- netmeta::netmeta(cipriani, sm = "OR", common = TRUE, prediction = FALSE, random = FALSE)
 
+png("cipriani_net.png", width = 1500, height = 1000)
 netmeta::netgraph(
-  cip_res
+  cip_res,
 )
+dev.off()
+
 
 cip_split <- netmeta::netsplit(
   cip_res
@@ -163,23 +166,23 @@ netmeta:::forest.netsplit(
 dev.off()
 
 
-plot3 <- consistency_check(cip_split, 
+plot3 <- consistency_check(cip_split,
                            mytitle = " ",
                            show_labels_only_signif = TRUE,
                            ylims = c(-4, 4),
                            plottag = "A")
 
-plot4 <- consistency_check(cip_split, 
+plot4 <- consistency_check(cip_split,
                            mytitle = " ",
                            show_only_signif = TRUE,
                            show_prop = TRUE,
                            plottag = "B")
 
 
-ggsave("Figure 2.png", 
+ggsave("Figure 2.png",
        figure <- gridExtra::arrangeGrob(
-         plot3, 
-         plot4, 
+         plot3,
+         plot4,
          nrow=2),
        device = "png", dpi=800,
        width = 12.0, height = 16.0, units="in")
