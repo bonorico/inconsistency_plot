@@ -96,7 +96,7 @@ net$TE.direct.common
 net$TE.indirect.common
 
 # back-calculation
-res <- netmeta::netsplit(net, common = TRUE)
+res <- netmeta::netsplit(net, random = FALSE)
 # random effect model
 res2 <- netmeta::netsplit(net, random = TRUE)
 
