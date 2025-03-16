@@ -79,8 +79,7 @@ data("Senn2013")
 
 
 net <- netmeta(TE, seTE, treat1, treat2, studlab,
-               data = Senn2013, sm = "MD",
-               random = TRUE)
+               data = Senn2013, sm = "MD")
 
 Q <- netmeta::decomp.design(net)
 
@@ -97,7 +96,11 @@ net$TE.direct.common
 net$TE.indirect.common
 
 # back-calculation
-res <- netmeta::netsplit(net)
+res <- netmeta::netsplit(net, common = TRUE)
+# random effect model
+res2 <- netmeta::netsplit(net, random = TRUE)
+
+
 # node-splitting
 # res2 <- netmeta::netsplit(net, method = "SIDDE")
 
@@ -120,13 +123,30 @@ netmeta:::forest.netsplit(
 dev.off()
 
 
+png("senn_forest_rand.png", width = 600, height = 1000)
+netmeta:::forest.netsplit(
+  res2
+)
+dev.off()
+
+
 png("senn_netheat.png", width = 600, height = 600)
 netmeta::netheat(net)
 dev.off()
 
+png("senn_netheat_rand.png", width = 600, height = 600)
+netmeta::netheat(net, random = TRUE)
+dev.off()
+
+
 plot2 <- consistency_check(res, mytitle = " ", show_prop = TRUE)
 
-figure <- gridExtra::arrangeGrob(plot1, plot2, nrow=2)
+# using random effect model no inconsistency is found
+plot2b <- consistency_check(res, mytitle = " ", show_prop = TRUE, model_type = "random")
+
+
+
+figure <- gridExtra::arrangeGrob(plot1, plot2, nrow=1)
 
 ggsave("Figure 1.ps", figure,
        device=cairo_ps, dpi=800,
@@ -134,7 +154,12 @@ ggsave("Figure 1.ps", figure,
 
 ggsave("Figure 1.png", figure,
        device = "png", dpi=800,
-       width = 8.0, height = 16.0, units="in")
+       width = 16.0, height = 8.0, units="in")
+
+
+ggsave("Figure 1o.png", plot2b,
+       device = "png", dpi=800,
+       width = 8.0, height = 8.0, units="in")
 
 
 
