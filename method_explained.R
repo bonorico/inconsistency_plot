@@ -194,7 +194,7 @@ cip_split <- netmeta::netsplit(
   cip_res
 )
 
-png("cipriani_heat2.png", width = 500, height = 500)
+png("cipriani_heat.png", width = 500, height = 500)
 netmeta::netheat(cip_res)
 dev.off()
 
@@ -226,4 +226,6 @@ ggsave("Figure 2.png",
        device = "png", dpi=800,
        width = 12.0, height = 16.0, units="in")
 
+
+#### Cipriani random-effect: no new insight
 
