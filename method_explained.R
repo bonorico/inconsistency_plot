@@ -170,10 +170,31 @@ cipriani_raw <- readxl::read_xlsx(
   "./Cipriani et al_GRISELDA_Lancet 2018_Open data.xlsx",
   na = c("*"),
   skip = 2
-)
+) |>
+  mutate(
+    Drug = ifelse(Drug == "Placebo", "placebo", Drug),
+    Drug_class = str_remove_all(Drug,
+                                pattern = "\\d+|-|\\.|mg|IR|XR| ")
+  )
 
 
 cipriani <- netmeta::pairwise(
+  treat = Drug_class,
+  event = Responders,
+  n = No_randomised,
+  studlab = StudyID,
+  # collapse responders if using drug classes
+  data = cipriani_raw |>
+    group_by(StudyID, Drug_class) |>
+    summarise(
+      Responders = sum(Responders, na.rm = TRUE),
+      No_randomised = sum(No_randomised, na.rm = TRUE)
+    ) |>
+    ungroup()
+)
+
+# cipriani with different trt dosing (sparse evidence)
+cipriani2 <- netmeta::pairwise(
   treat = Drug,
   event = Responders,
   n = No_randomised,
@@ -181,9 +202,22 @@ cipriani <- netmeta::pairwise(
   data = cipriani_raw
 )
 
-cip_res <- netmeta::netmeta(cipriani, sm = "OR", common = TRUE, prediction = FALSE, random = FALSE)
+cip_res <- netmeta::netmeta(cipriani, sm = "OR", common = TRUE,
+                            prediction = FALSE, random = FALSE,
+                            reference.group = "placebo")
 
-png("cipriani_net.png", width = 1500, height = 1000)
+netmeta::netrank(cip_res, method = "SUCRA", small.values = "undesirable", random = FALSE)
+netmeta::netrank(cip_res, method = "SUCRA", small.values = "undesirable", random = TRUE)
+
+
+cip_res$k # n studies
+cip_res$n # n nodes
+cip_res$d # n design
+cip_res$m # n h-t-h comparisons
+cip_res$n.trts |> sum()
+
+
+png("cipriani_net.png", width = 600, height = 600)
 netmeta::netgraph(
   cip_res,
 )
@@ -194,9 +228,18 @@ cip_split <- netmeta::netsplit(
   cip_res
 )
 
-png("cipriani_heat.png", width = 500, height = 500)
+# total proportion of direct evidence available
+(length(cip_split$k[cip_split$k > 0]) / length(cip_split$k))*100
+
+cip_split$k[cip_split$k > 0] |> summary()
+
+png("cipriani_heat.png", width = 1500, height = 1500)
 netmeta::netheat(cip_res)
 dev.off()
+
+  png("cipriani_heat_rand.png", width = 1500, height = 1500)
+  netmeta::netheat(cip_res, random = FALSE)
+  dev.off()
 
 png("cipriani_forest.png", width = 600, height = 3000)
 netmeta:::forest.netsplit(
@@ -208,14 +251,15 @@ dev.off()
 plot3 <- consistency_check(cip_split,
                            mytitle = " ",
                            show_labels_only_signif = TRUE,
-                           ylims = c(-4, 4),
+                           ylims = c(-2, 2),
                            plottag = "A")
 
 plot4 <- consistency_check(cip_split,
                            mytitle = " ",
                            show_only_signif = TRUE,
                            show_prop = TRUE,
-                           plottag = "B")
+                           plottag = "B",
+                           labelsize = 8)
 
 
 ggsave("Figure 2.png",
@@ -229,3 +273,27 @@ ggsave("Figure 2.png",
 
 #### Cipriani random-effect: no new insight
 
+
+plot5 <- consistency_check(cip_split,
+                           mytitle = " ",
+                           show_labels_only_signif = TRUE,
+                           ylims = c(-2, 2),
+                           plottag = "A",
+                           model_type = "random")
+
+plot6 <- consistency_check(cip_split,
+                           mytitle = " ",
+                           show_only_signif = TRUE,
+                           show_prop = TRUE,
+                           plottag = "B",
+                           labelsize = 8,
+                           model_type = "random")
+
+
+ggsave("Figure 2o.png",
+       figure <- gridExtra::arrangeGrob(
+         plot5,
+         plot6,
+         nrow=2),
+       device = "png", dpi=800,
+       width = 12.0, height = 16.0, units="in")
