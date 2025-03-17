@@ -209,11 +209,13 @@ cip_res <- netmeta::netmeta(cipriani, sm = "OR", common = TRUE,
 netmeta::netrank(cip_res, method = "SUCRA", small.values = "undesirable", random = FALSE)
 netmeta::netrank(cip_res, method = "SUCRA", small.values = "undesirable", random = TRUE)
 
+netmeta:::forest.netmeta(cip_res)
 
 cip_res$k # n studies
 cip_res$n # n nodes
 cip_res$d # n design
 cip_res$m # n h-t-h comparisons
+sum(cip_res$n.arms > 2)/cip_res$k # n multi arms studt
 cip_res$n.trts |> sum()
 
 
@@ -232,12 +234,13 @@ cip_split <- netmeta::netsplit(
 (length(cip_split$k[cip_split$k > 0]) / length(cip_split$k))*100
 
 cip_split$k[cip_split$k > 0] |> summary()
+cip_split$k[cip_split$k > 0] |> sd()
 
-png("cipriani_heat.png", width = 1500, height = 1500)
+png("cipriani_heat_rand.png", width = 1500, height = 1500)
 netmeta::netheat(cip_res)
 dev.off()
 
-  png("cipriani_heat_rand.png", width = 1500, height = 1500)
+  png("cipriani_heat.png", width = 1500, height = 1500)
   netmeta::netheat(cip_res, random = FALSE)
   dev.off()
 
