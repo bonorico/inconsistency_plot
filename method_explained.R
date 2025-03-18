@@ -254,8 +254,9 @@ dev.off()
 plot3 <- consistency_check(cip_split,
                            mytitle = " ",
                            show_labels_only_signif = TRUE,
-                           ylims = c(-2, 2),
-                           plottag = "A")
+                           ylims = c(-0.5, 0.52),
+                           plottag = "A",
+                           labelsize = 8)
 
 plot4 <- consistency_check(cip_split,
                            mytitle = " ",
