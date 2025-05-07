@@ -148,9 +148,11 @@ plot2b <- consistency_check(res, mytitle = " ", show_prop = TRUE, model_type = "
 
 figure <- gridExtra::arrangeGrob(plot1, plot2, nrow=1)
 
-ggsave("Figure 1.ps", figure,
+# FIGURE 1
+
+ggsave("Figure_1.ps", figure,
        device=cairo_ps, dpi=800,
-       width = 8.0, height = 16.0, units="in")
+       width = 16.0, height = 8.0, units="in")
 
 ggsave("Figure 1.png", figure,
        device = "png", dpi=800,
@@ -178,7 +180,7 @@ cipriani_raw <- readxl::read_xlsx(
   )
 
 
-cipriani <- netmeta::pairwise(
+cipriani <- meta::pairwise(
   treat = Drug_class,
   event = Responders,
   n = No_randomised,
@@ -194,7 +196,7 @@ cipriani <- netmeta::pairwise(
 )
 
 # cipriani with different trt dosing (sparse evidence)
-cipriani2 <- netmeta::pairwise(
+cipriani2 <- meta::pairwise(
   treat = Drug,
   event = Responders,
   n = No_randomised,
@@ -301,3 +303,48 @@ ggsave("Figure 2o.png",
          nrow=2),
        device = "png", dpi=800,
        width = 12.0, height = 16.0, units="in")
+
+#### EPS CONVERSION of relevant figures
+
+# FIGURE 2
+
+
+postscript("Figure_2.ps", width = 300, height = 300)
+netmeta::netgraph(net, plastic = TRUE, number.of.studies = FALSE)
+dev.off()
+
+# FIGURE 3
+
+postscript("Figure_3.ps", width = 600, height = 1000)
+netmeta:::forest.netsplit(
+  res
+)
+dev.off()
+
+# FIGURE 4
+
+postscript("Figure_4.ps", width = 600, height = 600)
+netmeta::netheat(net)
+dev.off()
+
+
+# FIGURE 5
+
+postscript("Figure_5.ps", width = 600, height = 600)
+netmeta::netgraph(
+  cip_res,
+  plastic = TRUE,
+  number.of.studies = FALSE
+)
+dev.off()
+
+
+# FIGURE 6
+ggsave("Figure_6.ps",
+       figure <- gridExtra::arrangeGrob(
+         plot3,
+         plot4,
+         nrow=2),
+       device = "eps", dpi=800,
+       width = 12.0, height = 16.0, units="in")
+
