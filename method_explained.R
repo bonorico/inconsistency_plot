@@ -29,6 +29,20 @@ plot1 <- ggplot(
                color = c('black', 'red', 'red'),
                linetype=c("dotted", "solid", "solid")) +
 
+# add filling of half triangle
+   annotate(
+     geom = "polygon",
+     x = c(d, d, (d+i)/2),
+     y = c(i, d, (d+i)/2),
+     fill = "blue",
+     alpha = 0.1
+   ) +
+  geom_text(
+    x = (d+i)/2,
+    y = (d+i)/2,
+    label = "B",
+    nudge_x = 0.3
+  ) +
   geom_point() +
   geom_text_repel(
     family = "Times New Roman",
@@ -45,7 +59,7 @@ plot1 <- ggplot(
            y=i+(d-i)*sin(seq(0,2*pi,length.out=100))) +
 
   labs(
-    title = "A",
+    tag = "A",
     x = "direct",
     y = "indirect") +
   theme(panel.background = element_rect(fill = "white") ) +
@@ -60,24 +74,277 @@ coord_cartesian(xlim = c(0, 2),
 
 
 data("Senn2013")
+
+### basic description of Senn data
+
+
 net <- netmeta(TE, seTE, treat1, treat2, studlab,
-               data = Senn2013, sm = "MD",
-               random = TRUE)
+               data = Senn2013, sm = "MD")
 
-netmeta:::forest.netmeta(net)
+Q <- netmeta::decomp.design(net)
+
+
 netmeta::netrank(net)
+netmeta:::forest.netmeta(net)
+
+png("senn_net.png", width = 300, height = 300)
 netmeta::netgraph(net)
+dev.off()
 
+
+net$TE.direct.common
+net$TE.indirect.common
+
+# back-calculation
+res <- netmeta::netsplit(net, random = FALSE)
+# random effect model
+res2 <- netmeta::netsplit(net, random = TRUE)
+
+
+# node-splitting
+# res2 <- netmeta::netsplit(net, method = "SIDDE")
+
+res$method
+
+prop <- res$compare.common |>
+  left_join(
+    data.frame(
+      comparison = res$comparison,
+      prop.direct = res$prop.common
+    ),
+    by = "comparison"
+  )
+
+
+png("senn_forest.png", width = 600, height = 1000)
+netmeta:::forest.netsplit(
+  res
+)
+dev.off()
+
+
+png("senn_forest_rand.png", width = 600, height = 1000)
+netmeta:::forest.netsplit(
+  res2
+)
+dev.off()
+
+
+png("senn_netheat.png", width = 600, height = 600)
 netmeta::netheat(net)
+dev.off()
 
-plot2 <- consistency_check(netsplit(net), mytitle = "B")
+png("senn_netheat_rand.png", width = 600, height = 600)
+netmeta::netheat(net, random = TRUE)
+dev.off()
 
-figure <- gridExtra::arrangeGrob(plot1, plot2, nrow=2)
 
-ggsave("Figure 1.ps", figure,
+plot2 <- consistency_check(res, mytitle = " ", show_prop = TRUE)
+
+# using random effect model no inconsistency is found
+plot2b <- consistency_check(res, mytitle = " ", show_prop = TRUE, model_type = "random")
+
+
+
+figure <- gridExtra::arrangeGrob(plot1, plot2, nrow=1)
+
+# FIGURE 1
+
+ggsave("Figure_1.ps", figure,
        device=cairo_ps, dpi=800,
-       width = 8.0, height = 16.0, units="in")
+       width = 16.0, height = 8.0, units="in")
 
 ggsave("Figure 1.png", figure,
        device = "png", dpi=800,
-       width = 8.0, height = 16.0, units="in")
+       width = 16.0, height = 8.0, units="in")
+
+
+ggsave("Figure 1o.png", plot2b,
+       device = "png", dpi=800,
+       width = 8.0, height = 8.0, units="in")
+
+
+
+
+# Example Cig Data Cipriani 2018  ---------------------------------------------------------
+
+cipriani_raw <- readxl::read_xlsx(
+  "./Cipriani et al_GRISELDA_Lancet 2018_Open data.xlsx",
+  na = c("*"),
+  skip = 2
+) |>
+  mutate(
+    Drug = ifelse(Drug == "Placebo", "placebo", Drug),
+    Drug_class = str_remove_all(Drug,
+                                pattern = "\\d+|-|\\.|mg|IR|XR| ")
+  )
+
+
+cipriani <- meta::pairwise(
+  treat = Drug_class,
+  event = Responders,
+  n = No_randomised,
+  studlab = StudyID,
+  # collapse responders if using drug classes
+  data = cipriani_raw |>
+    group_by(StudyID, Drug_class) |>
+    summarise(
+      Responders = sum(Responders, na.rm = TRUE),
+      No_randomised = sum(No_randomised, na.rm = TRUE)
+    ) |>
+    ungroup()
+)
+
+# cipriani with different trt dosing (sparse evidence)
+cipriani2 <- meta::pairwise(
+  treat = Drug,
+  event = Responders,
+  n = No_randomised,
+  studlab = StudyID,
+  data = cipriani_raw
+)
+
+cip_res <- netmeta::netmeta(cipriani, sm = "OR", common = TRUE,
+                            prediction = FALSE, random = FALSE,
+                            reference.group = "placebo")
+
+netmeta::netrank(cip_res, method = "SUCRA", small.values = "undesirable", random = FALSE)
+netmeta::netrank(cip_res, method = "SUCRA", small.values = "undesirable", random = TRUE)
+
+netmeta:::forest.netmeta(cip_res)
+
+cip_res$k # n studies
+cip_res$n # n nodes
+cip_res$d # n design
+cip_res$m # n h-t-h comparisons
+sum(cip_res$n.arms > 2)/cip_res$k # n multi arms studt
+cip_res$n.trts |> sum()
+
+
+png("cipriani_net.png", width = 600, height = 600)
+netmeta::netgraph(
+  cip_res,
+)
+dev.off()
+
+
+cip_split <- netmeta::netsplit(
+  cip_res
+)
+
+# total proportion of direct evidence available
+(length(cip_split$k[cip_split$k > 0]) / length(cip_split$k))*100
+
+cip_split$k[cip_split$k > 0] |> summary()
+cip_split$k[cip_split$k > 0] |> sd()
+
+png("cipriani_heat_rand.png", width = 1500, height = 1500)
+netmeta::netheat(cip_res)
+dev.off()
+
+  png("cipriani_heat.png", width = 1500, height = 1500)
+  netmeta::netheat(cip_res, random = FALSE)
+  dev.off()
+
+png("cipriani_forest.png", width = 600, height = 3000)
+netmeta:::forest.netsplit(
+  cip_split
+)
+dev.off()
+
+
+plot3 <- consistency_check(cip_split,
+                           mytitle = " ",
+                           show_labels_only_signif = TRUE,
+                           ylims = c(-0.5, 0.52),
+                           plottag = "A",
+                           labelsize = 8)
+
+plot4 <- consistency_check(cip_split,
+                           mytitle = " ",
+                           show_only_signif = TRUE,
+                           show_prop = TRUE,
+                           plottag = "B",
+                           labelsize = 8)
+
+
+ggsave("Figure 2.png",
+       figure <- gridExtra::arrangeGrob(
+         plot3,
+         plot4,
+         nrow=2),
+       device = "png", dpi=800,
+       width = 12.0, height = 16.0, units="in")
+
+
+#### Cipriani random-effect: no new insight
+
+
+plot5 <- consistency_check(cip_split,
+                           mytitle = " ",
+                           show_labels_only_signif = TRUE,
+                           ylims = c(-2, 2),
+                           plottag = "A",
+                           model_type = "random")
+
+plot6 <- consistency_check(cip_split,
+                           mytitle = " ",
+                           show_only_signif = TRUE,
+                           show_prop = TRUE,
+                           plottag = "B",
+                           labelsize = 8,
+                           model_type = "random")
+
+
+ggsave("Figure 2o.png",
+       figure <- gridExtra::arrangeGrob(
+         plot5,
+         plot6,
+         nrow=2),
+       device = "png", dpi=800,
+       width = 12.0, height = 16.0, units="in")
+
+#### EPS CONVERSION of relevant figures
+
+# FIGURE 2
+
+
+postscript("Figure_2.ps", width = 300, height = 300)
+netmeta::netgraph(net, plastic = TRUE, number.of.studies = FALSE)
+dev.off()
+
+# FIGURE 3
+
+postscript("Figure_3.ps", width = 600, height = 1000)
+netmeta:::forest.netsplit(
+  res
+)
+dev.off()
+
+# FIGURE 4
+
+postscript("Figure_4.ps", width = 600, height = 600)
+netmeta::netheat(net)
+dev.off()
+
+
+# FIGURE 5
+
+postscript("Figure_5.ps", width = 600, height = 600)
+netmeta::netgraph(
+  cip_res,
+  plastic = TRUE,
+  number.of.studies = FALSE
+)
+dev.off()
+
+
+# FIGURE 6
+ggsave("Figure_6.ps",
+       figure <- gridExtra::arrangeGrob(
+         plot3,
+         plot4,
+         nrow=2),
+       device = "eps", dpi=800,
+       width = 12.0, height = 16.0, units="in")
+
