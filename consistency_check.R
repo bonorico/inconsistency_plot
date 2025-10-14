@@ -203,7 +203,11 @@ consistency_check <- function(table,
            size=guide_legend(title="Indirect (%)")) +
       # Add plot labels
     labs(title = mytitle,
-         subtitle = paste(str_to_title(model_type), "Effects Model"),
+         subtitle = ifelse(
+           model_type == "fixed",
+           "Common Effect Model",
+           "Random Effects Model"
+         ),
          x     = "Direct Effect Estimate",
          y     = "Indirect Effect Estimate",
          caption = paste0(
