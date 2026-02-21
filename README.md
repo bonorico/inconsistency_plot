@@ -5,3 +5,5 @@ Credit for overall support goes to [Anton Schönstein](https://www.linkedin.com/
 
 For the applied example run [method_explained.R](https://github.com/bonorico/inconsistency_plot/blob/main/method_explained.R)
 
+Release: https://doi.org/10.5281/zenodo.18724989
+
